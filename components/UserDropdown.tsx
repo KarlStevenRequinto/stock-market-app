@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { LogOut } from "lucide-react";
 import NavItems from "@/components/NavItems";
-import { signOut } from "@/lib/actions/auth.actions";
+
 import { Button } from "./ui/button";
 import {
     DropdownMenu,
@@ -15,6 +15,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuItem,
 } from "./ui/dropdown-menu";
+import { signOut } from "@/lib/actions/auth.actions";
 
 const UserDropdown = ({ user, initialStocks }: { user: User; initialStocks: StockWithWatchlistStatus[] }) => {
     const router = useRouter();
