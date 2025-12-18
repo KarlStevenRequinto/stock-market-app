@@ -1,12 +1,20 @@
 "use client";
 
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+
 import { LogOut } from "lucide-react";
 import NavItems from "@/components/NavItems";
 import { signOut } from "@/lib/actions/auth.actions";
+import { Button } from "./ui/button";
+import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuItem,
+} from "./ui/dropdown-menu";
 
 const UserDropdown = ({ user, initialStocks }: { user: User; initialStocks: StockWithWatchlistStatus[] }) => {
     const router = useRouter();
