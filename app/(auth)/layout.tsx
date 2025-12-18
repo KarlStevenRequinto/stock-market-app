@@ -1,8 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
-import { auth } from "@/lib/better-auth/auth";
+
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { auth } from "@/lib/better-auth/auth";
 
 const Layout = async ({ children }: { children: React.ReactNode }) => {
     const session = await auth.api.getSession({ headers: await headers() });
