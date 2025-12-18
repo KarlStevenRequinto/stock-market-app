@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CommandDialog, CommandEmpty, CommandInput, CommandList } from "@/components/ui/command";
-
+import { CommandDialog, CommandEmpty, CommandInput, CommandList } from "./ui/command";
 import { Loader2, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { searchStocks } from "@/lib/actions/finnhub.actions";
-import { useDebounce } from "@/hooks/useDebounce";
+
 import { Button } from "./ui/button";
+import { useDebounce } from "@/hooks/useDebounce";
 
 export default function SearchCommand({ renderAs = "button", label = "Add stock", initialStocks }: SearchCommandProps) {
     const [open, setOpen] = useState(false);
