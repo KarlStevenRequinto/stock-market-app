@@ -106,9 +106,9 @@ declare global {
         symbol: string;
         company: string;
         isInWatchlist: boolean;
+        userId: string;
         showTrashIcon?: boolean;
         type?: "button" | "icon";
-        onWatchlistChange?: (symbol: string, isAdded: boolean) => void;
     };
 
     type QuoteData = {
