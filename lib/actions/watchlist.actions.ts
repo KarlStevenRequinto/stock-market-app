@@ -35,12 +35,79 @@ export async function getUserWatchlist(userId: string): Promise<StockWithData[]>
 
         const items = await Watchlist.find({ userId }).sort({ addedAt: -1 }).lean();
 
-        return items.map((item) => ({
-            userId: item.userId,
-            symbol: item.symbol,
-            company: item.company,
-            addedAt: item.addedAt,
-        }));
+        // Fetch live stock data from Finnhub for each symbol
+        const token = process.env.FINNHUB_API_KEY ?? process.env.NEXT_PUBLIC_FINNHUB_API_KEY;
+        if (!token) {
+            console.error("FINNHUB API key not configured");
+            // Return basic data without live prices
+            return items.map((item) => ({
+                userId: item.userId,
+                symbol: item.symbol,
+                company: item.company,
+                addedAt: item.addedAt,
+            }));
+        }
+
+        const FINNHUB_BASE_URL = "https://finnhub.io/api/v1";
+
+        // Fetch quote and profile data for each stock in parallel
+        const stocksWithData = await Promise.all(
+            items.map(async (item) => {
+                try {
+                    // Fetch quote (price, change %)
+                    const quoteUrl = `${FINNHUB_BASE_URL}/quote?symbol=${item.symbol}&token=${token}`;
+                    const quoteRes = await fetch(quoteUrl, { cache: "no-store" });
+                    const quoteData = (await quoteRes.json()) as QuoteData;
+
+                    // Fetch profile (market cap)
+                    const profileUrl = `${FINNHUB_BASE_URL}/stock/profile2?symbol=${item.symbol}&token=${token}`;
+                    const profileRes = await fetch(profileUrl, { cache: "no-store" });
+                    const profileData = (await profileRes.json()) as ProfileData;
+
+                    // Fetch financials (P/E ratio)
+                    const financialsUrl = `${FINNHUB_BASE_URL}/stock/metric?symbol=${item.symbol}&metric=all&token=${token}`;
+                    const financialsRes = await fetch(financialsUrl, { cache: "no-store" });
+                    const financialsData = (await financialsRes.json()) as FinancialsData;
+
+                    const currentPrice = quoteData?.c;
+                    const changePercent = quoteData?.dp;
+                    const marketCapValue = profileData?.marketCapitalization;
+                    const peRatioValue = financialsData?.metric?.peExclExtraTTM || financialsData?.metric?.peNormalizedAnnual;
+
+                    return {
+                        userId: item.userId,
+                        symbol: item.symbol,
+                        company: item.company,
+                        addedAt: item.addedAt,
+                        currentPrice,
+                        changePercent,
+                        priceFormatted: currentPrice ? `$${currentPrice.toFixed(2)}` : undefined,
+                        changeFormatted: changePercent
+                            ? `${changePercent > 0 ? "+" : ""}${changePercent.toFixed(2)}%`
+                            : undefined,
+                        marketCap: marketCapValue
+                            ? marketCapValue >= 1e3
+                                ? `$${(marketCapValue / 1e3).toFixed(2)}T`
+                                : marketCapValue >= 1
+                                ? `$${marketCapValue.toFixed(2)}B`
+                                : `$${(marketCapValue * 1e3).toFixed(2)}M`
+                            : undefined,
+                        peRatio: peRatioValue ? peRatioValue.toFixed(2) : undefined,
+                    };
+                } catch (error) {
+                    console.error(`Error fetching data for ${item.symbol}:`, error);
+                    // Return item with basic data if API call fails
+                    return {
+                        userId: item.userId,
+                        symbol: item.symbol,
+                        company: item.company,
+                        addedAt: item.addedAt,
+                    };
+                }
+            })
+        );
+
+        return stocksWithData;
     } catch (err) {
         console.error("getUserWatchlist error:", err);
         return [];

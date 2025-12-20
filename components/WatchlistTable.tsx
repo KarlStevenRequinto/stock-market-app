@@ -49,28 +49,37 @@ const WatchlistTable = ({ watchlist, userId }: { watchlist: StockWithData[]; use
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {items.map((row) => (
-                    <TableRow key={row.symbol}>
-                        <TableCell className="text-left">{row.company}</TableCell>
-                        <TableCell className="text-left font-mono font-semibold">{row.symbol}</TableCell>
-                        <TableCell className="text-left">{row.priceFormatted || "N/A"}</TableCell>
-                        <TableCell className="text-left">{row.changeFormatted || "N/A"}</TableCell>
-                        <TableCell className="text-left">{row.marketCap || "N/A"}</TableCell>
-                        <TableCell className="text-left">{row.peRatio || "N/A"}</TableCell>
-                        <TableCell className="text-left">None</TableCell>
-                        <TableCell className="text-left">
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleRemove(row.symbol)}
-                                disabled={removing === row.symbol}
-                                className="text-red-400 hover:text-red-300 hover:bg-red-950/30"
-                            >
-                                {removing === row.symbol ? "Removing..." : "Remove"}
-                            </Button>
-                        </TableCell>
-                    </TableRow>
-                ))}
+                {items.map((row) => {
+                    const changeColor =
+                        row.changePercent && row.changePercent > 0
+                            ? "text-green-500"
+                            : row.changePercent && row.changePercent < 0
+                            ? "text-red-500"
+                            : "text-gray-400";
+
+                    return (
+                        <TableRow key={row.symbol}>
+                            <TableCell className="text-left">{row.company}</TableCell>
+                            <TableCell className="text-left font-mono font-semibold">{row.symbol}</TableCell>
+                            <TableCell className="text-left">{row.priceFormatted || "N/A"}</TableCell>
+                            <TableCell className={`text-left ${changeColor}`}>{row.changeFormatted || "N/A"}</TableCell>
+                            <TableCell className="text-left">{row.marketCap || "N/A"}</TableCell>
+                            <TableCell className="text-left">{row.peRatio || "N/A"}</TableCell>
+                            <TableCell className="text-left">None</TableCell>
+                            <TableCell className="text-left">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleRemove(row.symbol)}
+                                    disabled={removing === row.symbol}
+                                    className="text-red-400 hover:text-red-300 hover:bg-red-950/30"
+                                >
+                                    {removing === row.symbol ? "Removing..." : "Remove"}
+                                </Button>
+                            </TableCell>
+                        </TableRow>
+                    );
+                })}
             </TableBody>
         </Table>
     );
