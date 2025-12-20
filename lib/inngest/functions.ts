@@ -1,11 +1,10 @@
 import { inngest } from "@/lib/inngest/client";
-
+import { NEWS_SUMMARY_EMAIL_PROMPT, PERSONALIZED_WELCOME_EMAIL_PROMPT } from "@/lib/inngest/prompts";
+import { sendNewsSummaryEmail, sendWelcomeEmail } from "@/lib/nodemailer";
 import { getAllUsersForNewsEmail } from "@/lib/actions/user.actions";
 import { getWatchlistSymbolsByEmail } from "@/lib/actions/watchlist.actions";
 import { getNews } from "@/lib/actions/finnhub.actions";
 import { getFormattedTodayDate } from "@/lib/utils";
-import { NEWS_SUMMARY_EMAIL_PROMPT, PERSONALIZED_WELCOME_EMAIL_PROMPT } from "./prompts";
-import { sendNewsSummaryEmail, sendWelcomeEmail } from "../nodemailer";
 
 export const sendSignUpEmail = inngest.createFunction({ id: "sign-up-email" }, { event: "app/user.created" }, async ({ event, step }) => {
     const userProfile = `
@@ -59,8 +58,8 @@ export const sendDailyNewsSummary = inngest.createFunction(
 
         // Step #2: For each user, get watchlist symbols -> fetch news (fallback to general)
         const results = await step.run("fetch-user-news", async () => {
-            const perUser: Array<{ user: UserForNews; articles: MarketNewsArticle[] }> = [];
-            for (const user of users as UserForNewsEmail[]) {
+            const perUser: Array<{ user: User; articles: MarketNewsArticle[] }> = [];
+            for (const user of users as User[]) {
                 try {
                     const symbols = await getWatchlistSymbolsByEmail(user.email);
                     let articles = await getNews(symbols);
@@ -81,7 +80,7 @@ export const sendDailyNewsSummary = inngest.createFunction(
         });
 
         // Step #3: (placeholder) Summarize news via AI
-        const userNewsSummaries: { user: UserForNewsEmail; newsContent: string | null }[] = [];
+        const userNewsSummaries: { user: User; newsContent: string | null }[] = [];
 
         for (const { user, articles } of results) {
             try {
